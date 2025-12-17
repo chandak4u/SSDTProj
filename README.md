@@ -8,3 +8,4 @@ https://marketplace.visualstudio.com/items?itemName=SolvSoftware.SSDT-Continuous
 
 # Contributing to the project
 Feedback with improvements and pull requests from the community will be highly appreciated and accepted.
+OK
