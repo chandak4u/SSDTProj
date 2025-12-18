@@ -1,0 +1,10 @@
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\bin\Release\AdventureWorks2019.dacpac
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\bin\Release\AdventureWorks2019.dll
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\bin\Release\AdventureWorks2019.pdb
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\obj\Release\AdventureWorks2019.sqlproj.AssemblyReference.cache
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\obj\Release\Model.xml
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\obj\Release\refactor.xml
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\obj\Release\postdeploy.sql
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\obj\Release\predeploy.sql
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\obj\Release\AdventureWorks2019.dll
+C:\MyFolder\db_project\SSDT\AdventureWorks2019\obj\Release\AdventureWorks2019.pdb
