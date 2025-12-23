@@ -31,7 +31,7 @@ jobs:
   build:
     needs: [integration]
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -101,8 +101,4 @@ jobs:
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        shell: pwsh
-        run: |
-          $env:TAGS -split "`n" | ForEach-Object { 
-            cosign sign --yes "$_@$env:DIGEST" 
-          }
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
