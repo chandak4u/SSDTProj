@@ -31,7 +31,7 @@ jobs:
   build:
     needs: [integration]
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
@@ -52,15 +52,14 @@ jobs:
 
       # Verify DACPAC was downloaded
       - name: Verify DACPAC
-        shell: pwsh
         run: |
-          if (Test-Path "bin/Output/AdventureWorks2019.dacpac") {
-            Write-Host "✓ DACPAC found and ready for Docker build"
-            Get-ChildItem bin/Output
-          } else {
-            Write-Error "DACPAC not found!"
+          if [ -f "bin/Output/AdventureWorks2019.dacpac" ]; then
+            echo "✓ DACPAC found and ready for Docker build"
+            ls -lh bin/Output
+          else
+            echo "✗ DACPAC not found!"
             exit 1
-          }
+          fi
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -120,8 +119,4 @@ jobs:
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
-        shell: pwsh
-        run: |
-          $env:TAGS -split "`n" | ForEach-Object { 
-            cosign sign --yes "$_@$env:DIGEST" 
-          }
+        run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
