@@ -43,6 +43,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Download DACPAC artifact from build job
+      - name: Download DACPAC Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dacpac-package
+          path: bin/Output
+
+      # Verify DACPAC was downloaded
+      - name: Verify DACPAC
+        shell: pwsh
+        run: |
+          if (Test-Path "bin/Output/AdventureWorks2019.dacpac") {
+            Write-Host "✓ DACPAC found and ready for Docker build"
+            Get-ChildItem bin/Output
+          } else {
+            Write-Error "DACPAC not found!"
+            exit 1
+          }
+
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
       - name: Install cosign
