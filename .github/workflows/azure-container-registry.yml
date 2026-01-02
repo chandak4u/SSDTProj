@@ -1,8 +1,11 @@
-name: Deploy to Azure Container Registry
+name: Build and Deploy Container
 
 on:
+  schedule:
+    - cron: '15 17 * * *'
   push:
     branches: [ main, develop ]
+    tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -16,20 +19,40 @@ on:
           - dev
           - staging
           - production
+      registry:
+        description: 'Container Registry'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - ghcr
+          - acr
+          - both
 
 env:
+  # GitHub Container Registry
+  GHCR_REGISTRY: ghcr.io
+  GHCR_IMAGE_NAME: ${{ github.repository }}
+  
+  # Azure Container Registry
   ACR_NAME: ${{ secrets.ACR_NAME }}  # e.g., myacr (without .azurecr.io)
-  IMAGE_NAME: adventureworks2019
+  ACR_IMAGE_NAME: adventureworks2019
   
 jobs:
-  # Build DACPAC using existing workflow
+  # Build and push to GitHub Container Registry using docker-publish workflow
   integration:
-    uses: ./.github/workflows/saurabhmsbuild.yml
+    uses: ./.github/workflows/docker-publish.yml
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    secrets: inherit
 
-  # Build and push to Azure Container Registry
+  # Build and push to Azure Container Registry (ACR)
   build-and-push-acr:
     needs: [integration]
     runs-on: ubuntu-latest
+    if: github.event.inputs.registry == 'acr' || github.event.inputs.registry == 'both' || github.event_name != 'workflow_dispatch'
     permissions:
       contents: read
       id-token: write
@@ -64,11 +87,11 @@ jobs:
           username: ${{ secrets.ACR_USERNAME }}
           password: ${{ secrets.ACR_PASSWORD }}
 
-      - name: Extract metadata (tags, labels)
-        id: meta
+      - name: Extract metadata (tags, labels) for ACR
+        id: meta-acr
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}
+          images: ${{ secrets.ACR_NAME }}.azurecr.io/${{ env.ACR_IMAGE_NAME }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -77,20 +100,22 @@ jobs:
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image to ACR
+        id: build-and-push-acr
         uses: docker/build-push-action@v5
         with:
           context: .
           platforms: linux/amd64
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=registry,ref=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache
-          cache-to: type=registry,ref=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          tags: ${{ steps.meta-acr.outputs.tags }}
+          labels: ${{ steps.meta-acr.outputs.labels }}
+          cache-from: type=registry,ref=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.ACR_IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ secrets.ACR_NAME }}.azurecr.io/${{ env.ACR_IMAGE_NAME }}:buildcache,mode=max
 
-      - name: Image digest
+      - name: ACR Image Summary
         run: |
-          echo "Image pushed successfully!"
+          echo "✅ Image pushed to Azure Container Registry!"
           echo "Registry: ${{ secrets.ACR_NAME }}.azurecr.io"
-          echo "Image: ${{ env.IMAGE_NAME }}"
-          echo "Tags: ${{ steps.meta.outputs.tags }}"
+          echo "Image: ${{ env.ACR_IMAGE_NAME }}"
+          echo "Tags: ${{ steps.meta-acr.outputs.tags }}"
+          echo "Digest: ${{ steps.build-and-push-acr.outputs.digest }}"
