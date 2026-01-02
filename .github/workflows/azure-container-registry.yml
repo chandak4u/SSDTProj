@@ -58,6 +58,7 @@ jobs:
       contents: read
       packages: write
       id-token: write
+      checks: write
     secrets: inherit
 
   # Build and push to Azure Container Registry (ACR)
