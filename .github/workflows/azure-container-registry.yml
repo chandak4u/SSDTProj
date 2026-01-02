@@ -28,6 +28,18 @@ on:
           - ghcr
           - acr
           - both
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Deployment Environment'
+        required: false
+        default: 'dev'
+        type: string
+      registry:
+        description: 'Container Registry'
+        required: false
+        default: 'both'
+        type: string
 
 env:
   # GitHub Container Registry
