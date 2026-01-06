@@ -16,16 +16,19 @@ for i in {1..30}; do
 done
 
 echo "Deploying database..."
-/opt/sqlpackage/sqlpackage /Action:Publish \
-    /SourceFile:/usr/src/app/AdventureWorks2019.dacpac \
-    /TargetServerName:localhost \
-    /TargetDatabaseName:AdventureWorks2019 \
-    /TargetUser:sa \
-    /TargetPassword:"${MSSQL_SA_PASSWORD}" \
-    /TargetTrustServerCertificate:True \
-    /p:IgnoreFullTextCatalogFilePath=True \
-    /p:IgnoreFileAndLogFilePath=True \
-    /p:BlockOnPossibleDataLoss=False || echo "Deployment completed with warnings/errors (Full-Text features skipped)"
+#!
+#!/opt/sqlpackage/sqlpackage /Action:Publish \
+#!    /SourceFile:/usr/src/app/AdventureWorks2019.dacpac \
+#!    /TargetServerName:localhost \
+#!    /TargetDatabaseName:AdventureWorks2019 \
+#!    /TargetUser:sa \
+#!    /TargetPassword:"${MSSQL_SA_PASSWORD}" \
+#!    /TargetTrustServerCertificate:True \
+#!    /p:IgnoreFullTextCatalogFilePath=True \
+#!    /p:IgnoreFileAndLogFilePath=True \
+#!    /p:BlockOnPossibleDataLoss=False || echo "Deployment completed with warnings/errors (Full-Text features skipped)"
+	
+/opt/sqlpackage/sqlpackage /Action:Publish /SourceFile:"/usr/src/app/AdventureWorks2019.dacpac" /TargetConnectionString:"Server=tcp:localhost;Initial Catalog=AdventureWorks2019;Persist Security Info=False;User ID=sa;Password=Sangc@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
 
 echo "Database ready!"
 wait $SQL_PID
