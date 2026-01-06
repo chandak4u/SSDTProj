@@ -28,7 +28,7 @@ echo "Deploying database..."
 #!    /p:IgnoreFileAndLogFilePath=True \
 #!    /p:BlockOnPossibleDataLoss=False || echo "Deployment completed with warnings/errors (Full-Text features skipped)"
 	
-/opt/sqlpackage/sqlpackage /Action:Publish /SourceFile:"/usr/src/app/AdventureWorks2019.dacpac" /TargetConnectionString:"Server=tcp:APT045CD119FX9N\MSSQLSERVER2025;Initial Catalog=AdventureWorks2019;Persist Security Info=False;User ID=sa;Password=Sangc@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
+/opt/sqlpackage/sqlpackage /Action:Publish /SourceFile:"/usr/src/app/AdventureWorks2019.dacpac" /TargetConnectionString:"Server=APT045CD119FX9N\MSSQLSERVER2025;Initial Catalog=AdventureWorks2019;Persist Security Info=False;User ID=sa;Password=Sangc@123;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;"
 
 echo "Database ready!"
 wait $SQL_PID
