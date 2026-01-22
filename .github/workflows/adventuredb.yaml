@@ -53,4 +53,76 @@ jobs:
         path: bin/${{env.BUILD_CONFIGURATION}}/${{env.DACPAC_NAME}}
         retention-days: 30
 
+docker:
+    needs: build
+    runs-on: linux-virtual-saurabh
+
+    steps:
+
+    - name: Download build artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: SSDT-ARTIFAC
+        path: bin/Release
+   
+    - name: Build Docker image
+      run: docker build -f Docker/adventureworks.dockerfile -t saurabhadventureworks:latest .
+
+    - name: Tag image for ACR
+      if: ${{ env.ACR_NAME != '' }}
+      run: |
+        REGISTRY="${{ env.ACR_NAME }}.azurecr.io"
+        echo "Tagging for registry: $REGISTRY"
+        docker tag saurabhadventureworks:latest $REGISTRY/saurabhadventureworks:latest
+        docker tag saurabhadventureworks:latest $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.run_number }}
+        docker tag saurabhadventureworks:latest $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.sha }}
+
+
+    - name: Log in to Azure Container Registry
+      if: ${{ env.ACR_NAME != '' && env.ACR_USERNAME != '' && env.ACR_PASSWORD != '' }}
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.ACR_NAME }}.azurecr.io
+        username: ${{ env.ACR_USERNAME }}
+        password: ${{ env.ACR_PASSWORD }}
+
+    - name: Push image to ACR
+      if: ${{  env.ACR_NAME != '' && (env.ACR_USERNAME != '' && env.ACR_PASSWORD != '') }}
+      run: |
+        REGISTRY="${{ env.ACR_NAME }}.azurecr.io"
+        echo "Pushing to registry: $REGISTRY"
+        docker push $REGISTRY/saurabhadventureworks:latest
+        docker push $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.run_number }}
+        docker push $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.sha }}
+
+    - name: Logout from Azure Container Registry
+      if: ${{ env.ACR_NAME != '' && env.ACR_USERNAME != '' && env.ACR_PASSWORD != '' }}
+      run: docker logout ${{ env.ACR_NAME }}.azurecr.io
+
+    # Generating the Package to publish on GitHub Container Registry (GHCR)
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Tag image for GHCR
+      run: |
+        REGISTRY="ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')"
+        echo "Tagging for registry: $REGISTRY"
+        docker tag saurabhadventureworks:latest $REGISTRY/saurabhadventureworks:latest
+        docker tag saurabhadventureworks:latest $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.run_number }}
+        docker tag saurabhadventureworks:latest $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.sha }}
+
+    - name: Push image to GHCR
+      run: |
+        REGISTRY="ghcr.io/$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')"
+        echo "Pushing to registry: $REGISTRY"
+        docker push $REGISTRY/saurabhadventureworks:latest
+        docker push $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.run_number }}
+        docker push $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.sha }}
+
+    - name: Logout from GitHub Container Registry
+      run: docker logout ghcr.io
   
