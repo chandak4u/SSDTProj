@@ -55,7 +55,7 @@ jobs:
 
   docker:
       needs: build
-      runs-on: saurabh-VirtualBox
+      runs-on: linux-virtual-saurabh
 
       steps:
 
