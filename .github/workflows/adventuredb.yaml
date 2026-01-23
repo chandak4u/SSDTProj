@@ -24,7 +24,7 @@ env:
   ACR_NAME: ${{ secrets.ACR_NAME }}
   ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
   ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-  #CONNECTIONSQL: ${{ secrets.CONNECTIONSQL }}
+  CONNECTIONSQL: ${{ secrets.CONNECTIONSQL }}
 
 permissions:
   contents: read
