@@ -59,7 +59,7 @@ jobs:
 
       steps:
       - uses: actions/checkout@v4
-      
+
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
@@ -125,4 +125,41 @@ jobs:
           docker push $REGISTRY/saurabhadventureworks:${{ github.ref_name }}.${{ github.sha }}
 
       - name: Logout from GitHub Container Registry
-        run: docker logout ghcr.io    
+        run: docker logout ghcr.io  
+        
+  deploy:
+    needs: docker
+    runs-on: window-virtual-saurabh  # Assumes 'window-virtual-saurabh' is your self-hosted runner name
+
+    steps:
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Pull latest image from GHCR
+      run: |
+        $repo = "${{ github.repository }}"
+        $REGISTRY = "ghcr.io/$($repo.ToLower())"
+        docker pull $REGISTRY/saurabhadventureworks:latest
+
+    - name: Run the container
+      run: |
+        $repo = "${{ github.repository }}"
+        $REGISTRY = "ghcr.io/$($repo.ToLower())"
+        docker run -d --name sqlserver -p 1433:1433 -e SECRET_DATA="${{ env.CONNECTIONSQL }}" -e TENANT_CODE="voyager" -e TENANT_ID="8f7aad84-7e54-4987-ae11-0b0aa9159f57" -e LCR_ENV="sbox" -e LCR_GEO="eus" --rm -it $REGISTRY/adventureworks:latest
+      # Note: Adjust environment variables (e.g., SA_PASSWORD) as needed for SQL Server. Ensure the Dockerfile sets up SQL Server correctly.
+
+    - name: Wait for container to finish and remove image
+      run: |
+        $repo = "${{ github.repository }}"
+        $REGISTRY = "ghcr.io/$($repo.ToLower())"
+        # Wait for the container to stop (adjust timeout as needed)
+        docker wait sqlserver
+        # Remove the image after container execution
+        docker rmi $REGISTRY/saurabhadventureworks:latest
+
+    - name: Logout from GitHub Container Registry
+      run: docker logout ghcr.io
