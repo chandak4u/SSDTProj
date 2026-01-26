@@ -149,7 +149,7 @@ jobs:
       run: |
         $repo = "${{ github.repository }}"
         $REGISTRY = "ghcr.io/$($repo.ToLower())"
-        docker run -d --name sqlserver -p 1433:1433 -e SECRET_DATA="${{ env.CONNECTIONSQL }}" -e TENANT_CODE="voyager" -e TENANT_ID="8f7aad84-7e54-4987-ae11-0b0aa9159f57" -e LCR_ENV="sbox" -e LCR_GEO="eus" --rm -it $REGISTRY/saurabhadventureworks:latest
+        docker run -d --name sqlserver -p 1433:1433 -e SECRET_DATA="${{ env.CONNECTIONSQL }}" -e TENANT_CODE="voyager" -e TENANT_ID="8f7aad84-7e54-4987-ae11-0b0aa9159f57" -e LCR_ENV="sbox" -e LCR_GEO="eus" --rm -it "$REGISTRY/saurabhadventureworks:latest"
       # Note: Adjust environment variables (e.g., SA_PASSWORD) as needed for SQL Server. Ensure the Dockerfile sets up SQL Server correctly.
 
     - name: Wait for container to finish and remove image
